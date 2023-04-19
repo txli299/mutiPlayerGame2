@@ -1,7 +1,7 @@
 import socket
 from _thread import *
 import pickle
-from game import Game
+from game2 import Game
 
 server = ''
 port = 5131
