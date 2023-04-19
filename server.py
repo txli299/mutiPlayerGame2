@@ -3,8 +3,10 @@ from _thread import *
 import pickle
 from game import Game
 
-server = socket.gethostbyname(socket.gethostname())
-port = 5555
+server = ''
+port = 5131
+
+server_ip = socket.gethostbyname(server)
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -39,7 +41,13 @@ def threaded_client(conn, p, gameId):
                     if data == "reset":
                         game.resetWent()
                     elif data != "get":
-                        game.play(p, data)
+                        if data not in game.move1 and data not in game.move2:
+                            if int(p)== 0:
+                                if not game.p2Went[game.round] and not game.p1Went[game.round]:
+                                    game.play(0,data)
+                            else:
+                                if game.p1Went[game.round] and not game.p2Went[game.round]:
+                                    game.play(1,data)
 
                     conn.sendall(pickle.dumps(game))
             else:

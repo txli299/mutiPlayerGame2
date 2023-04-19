@@ -1,54 +1,86 @@
 class Game:
     def __init__(self, id):
-        self.p1Went = False
-        self.p2Went = False
+        self.p1Went = [False,False,False,False,False]
+        self.p2Went = [False,False,False,False,False]
         self.ready = False
         self.id = id
-        self.moves = [None, None]
-        self.wins = [0,0]
-        self.ties = 0
+        self.move1 = set()
+        self.move2 = set()
+        self.round = 0
 
     def get_player_move(self, p):
         """
         :param p: [0,1]
         :return: Move
         """
-        return self.moves[p]
+        if p == 0:
+            return self.move1
+        else:
+            return self.move2
 
     def play(self, player, move):
-        self.moves[player] = move
-        if player == 0:
-            self.p1Went = True
-        else:
-            self.p2Went = True
+            if player ==0:
+                self.p1Went[self.round] = True
+                self.move1.add(move)
+            else:
+                self.p2Went[self.round] = True        
+                self.move2.add(move)
+                self.round+=1
+
 
     def connected(self):
         return self.ready
 
     def bothWent(self):
-        return self.p1Went and self.p2Went
+        return self.p1Went[self.round] and self.p2Went[self.round]
 
     def winner(self):
-
-        p1 = self.moves[0].upper()[0]
-        p2 = self.moves[1].upper()[0]
-
         winner = -1
-        if p1 == "R" and p2 == "S":
-            winner = 0
-        elif p1 == "S" and p2 == "R":
+        if "1"  in self.move1 and "2" in self.move1 and "3" in self.move1:
             winner = 1
-        elif p1 == "P" and p2 == "R":
-            winner = 0
-        elif p1 == "R" and p2 == "P":
+        elif "4"  in self.move1 and "5" in self.move1 and "6" in self.move1:
             winner = 1
-        elif p1 == "S" and p2 == "P":
-            winner = 0
-        elif p1 == "P" and p2 == "S":
+        elif "7"  in self.move1 and "8" in self.move1 and "9" in self.move1:
             winner = 1
+        elif "1"  in self.move1 and "4" in self.move1 and "7" in self.move1:
+            winner = 1
+        elif "2"  in self.move1 and "5" in self.move1 and "8" in self.move1:
+            winner = 1  
+        elif "3"  in self.move1 and "6" in self.move1 and "9" in self.move1:
+            winner = 1
+        elif "1"  in self.move1 and "5" in self.move1 and "9" in self.move1:
+            winner = 1
+        elif "3"  in self.move1 and "5" in self.move1 and "7" in self.move1:
+            winner = 1
+        elif "1"  in self.move2 and "2" in self.move2 and "3" in self.move2:
+            winner = 2
+        elif "4"  in self.move2 and "5" in self.move2 and "6" in self.move2:
+            winner = 2
+        elif "7"  in self.move2 and "8" in self.move2 and "9" in self.move2:
+            winner = 2
+        elif "1"  in self.move2 and "4" in self.move2 and "7" in self.move2:
+            winner = 2
+        elif "2"  in self.move2 and "5" in self.move2 and "8" in self.move2:
+            winner = 2 
+        elif "3"  in self.move2 and "6" in self.move2 and "9" in self.move2:
+            winner = 2
+        elif "1"  in self.move2 and "5" in self.move2 and "9" in self.move2:
+            winner = 2
+        elif "3"  in self.move2 and "5" in self.move2 and "7" in self.move2:
+            winner = 2
+        elif self.round == 4 and self.p1Went[4]:
+            winner = 0
 
         return winner
 
     def resetWent(self):
-        self.p1Went = False
-        self.p2Went = False
+        for a in len(self.p1Went):
+            self.p1Went[a] = False
+        for b in len(self.p1Went):
+            self.p1Went[b] = False
+        self.round = 0
+
+
+
+
+   
