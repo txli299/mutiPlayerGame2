@@ -10,13 +10,14 @@ pygame.display.set_caption("Client")
 
 
 class Button:
-    def __init__(self, text, x, y, color):
+    def __init__(self, text, x, y, color,tag):
         self.text = text
         self.x = x
         self.y = y
         self.color = color
         self.width = 150
         self.height = 150
+        self.tag = tag
 
     def draw(self, win):
         pygame.draw.rect(win, self.color, (self.x, self.y, self.width, self.height))
@@ -31,6 +32,8 @@ class Button:
             return True
         else:
             return False
+        
+
 
 
 def redrawWindow(win, game, p):
@@ -42,50 +45,30 @@ def redrawWindow(win, game, p):
         win.blit(text, (width/2 - text.get_width()/2, height/2 - text.get_height()/2))
     else:
         font = pygame.font.SysFont("comicsans", 60)
-        text = font.render("Your Move", 1, (0, 255,255))
-        win.blit(text, (60, 60))
+        text1 = font.render("Your turn", 1, (0, 255, 255))
+        text2 = font.render("Waiting...", 1, (0, 255, 255))
 
-        text = font.render("Opponents", 1, (0, 255, 255))
-        win.blit(text, (420, 60))
-
-        move1 = game.get_player_move(0)
-        move2 = game.get_player_move(1)
-        if game.bothWent():
-            text1 = font.render(move1, 1, (0,0,0))
-            text2 = font.render(move2, 1, (0, 0, 0))
+        if (p == 0 and not game.p1Went[game.round] )or (p ==1 and game.p1Went[game.round]):
+            win.blit(text1, (240, 100))
         else:
-            if game.p1Went and p == 0:
-                text1 = font.render(move1, 1, (0,0,0))
-            elif game.p1Went:
-                text1 = font.render("Locked In", 1, (0, 0, 0))
-            else:
-                text1 = font.render("Waiting...", 1, (0, 0, 0))
+            win.blit(text2, (240, 100))
 
-            if game.p2Went and p == 1:
-                text2 = font.render(move2, 1, (0,0,0))
-            elif game.p2Went:
-                text2 = font.render("Locked In", 1, (0, 0, 0))
-            else:
-                text2 = font.render("Waiting...", 1, (0, 0, 0))
-
-        if p == 1:
-            win.blit(text2, (80, 160))
-            win.blit(text1, (430, 160))
-        else:
-            win.blit(text1, (80, 160))
-            win.blit(text2, (430, 160))
-
+        for btn in btns:
+            btn.text = ""
+        for p1move in game.move1:
+            btns[int(p1move)-1].text = "X"
+        for p2move in game.move2:
+            btns[int(p2move)-1].text = "O"
+        
         for btn in btns:
             btn.draw(win)
 
-        for block in blocks:
-            block.draw(win)
+  
 
     pygame.display.update()
 
 
-btns = [Button("X", 90, 280, (255,255,255)), Button("", 310, 280, (255,255,255)), Button("", 530, 280, (255,255,255))]
-blocks = [Button("",90,470,(255,255,255)),Button("",310,470,(255,255,255)),Button("",530,470,(255,255,255)),Button("",90,660,(255,255,255)),Button("",310,660,(255,255,255)),Button("",530,660,(255,255,255))]
+btns = [Button("",90,660,(255,255,255),"1"),Button("",310,660,(255,255,255),"2"),Button("",530,660,(255,255,255),"3"),Button("",90,470,(255,255,255),"4"),Button("",310,470,(255,255,255),"5"),Button("",530,470,(255,255,255),"6"),Button("", 90, 280, (255,255,255),"7"), Button("", 310, 280, (255,255,255),"8"), Button("", 530, 280, (255,255,255),"9")]
 def main():
     run = True
     clock = pygame.time.Clock()
@@ -102,27 +85,32 @@ def main():
             print("Couldn't get game")
             break
 
-        if game.bothWent():
-            redrawWindow(win, game, player)
+        redrawWindow(win, game, player)
+
+        if game.winner() !=-1:
+            
             pygame.time.delay(500)
             try:
+                font = pygame.font.SysFont("comicsans", 90)
+                if (game.winner() == 1 and player == 0) or (game.winner() == 2 and player == 1):
+                    text = font.render("You Won!", 1, (255,0,0))
+                elif game.winner() == 0:
+                    text = font.render("Tie Game!", 1, (255,0,0))
+                elif (game.winner() == 1 and player ==1) or (game.winner()==2 and player == 0):
+                    text = font.render("You Lost...", 1, (255, 0, 0))
+
+                win.blit(text, (width/2 - text.get_width()/2, height/2 - text.get_height()/2))
+                pygame.display.update()
+                pygame.time.delay(2000)
+                
                 game = n.send("reset")
             except:
                 run = False
-                print("Couldn't get game")
+                
                 break
-
-            font = pygame.font.SysFont("comicsans", 90)
-            if (game.winner() == 1 and player == 1) or (game.winner() == 0 and player == 0):
-                text = font.render("You Won!", 1, (255,0,0))
-            elif game.winner() == -1:
-                text = font.render("Tie Game!", 1, (255,0,0))
-            else:
-                text = font.render("You Lost...", 1, (255, 0, 0))
-
-            win.blit(text, (width/2 - text.get_width()/2, height/2 - text.get_height()/2))
-            pygame.display.update()
-            pygame.time.delay(2000)
+            
+            
+            
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -134,11 +122,11 @@ def main():
                 for btn in btns:
                     if btn.click(pos) and game.connected():
                         if player == 0:
-                            if not game.p1Went:
-                                n.send(btn.text)
+                            if not game.p1Went[game.round]:
+                                n.send(btn.tag)
                         else:
-                            if not game.p2Went:
-                                n.send(btn.text)
+                            if not game.p2Went[game.round] and game.p1Went[game.round]:
+                                n.send(btn.tag)
 
         redrawWindow(win, game, player)
 
