@@ -3,7 +3,8 @@ from _thread import *
 import pickle
 from game2 import Game
 
-server = ''
+server = socket.gethostbyname(socket.gethostname())
+''
 port = 5131
 
 server_ip = socket.gethostbyname(server)
@@ -27,32 +28,41 @@ def threaded_client(conn, p, gameId):
     global idCount
     conn.send(str.encode(str(p)))
 
-    reply = ""
+    #reply = ""
     while True:
         try:
-            data = conn.recv(4096).decode()
-
+            data = conn.recv(4096*2).decode()
+            print(f"received something {data}")
             if gameId in games:
                 game = games[gameId]
 
                 if not data:
+                    print("Break here")
                     break
                 else:
                     if data == "reset":
+                        game.reset_game()
                         game.resetWent()
+                    elif data == "exit":
+                        game.exit_game()
                     elif data != "get":
-                        if data not in game.move1 and data not in game.move2:
-                            if int(p)== 0:
-                                if not game.p2Went[game.round] and not game.p1Went[game.round]:
-                                    game.play(0,data)
-                            else:
-                                if game.p1Went[game.round] and not game.p2Went[game.round]:
-                                    game.play(1,data)
-
+                        game.play(int(p), data)
+                        # if data not in game.move1 and data not in game.move2:
+                        #     if int(p)== 0:
+                        #         if not game.p2Went[game.round] and not game.p1Went[game.round]:
+                        #             game.play(0,data)
+                        #     else:
+                        #         if game.p1Went[game.round] and not game.p2Went[game.round]:
+                        #             game.play(1,data)
                     conn.sendall(pickle.dumps(game))
+                    #conn.sendall("This is really interesting")
+                
+                print("sent")
             else:
+                print("Break here2")
                 break
         except:
+            print("Break here3")
             break
 
     print("Lost connection")
